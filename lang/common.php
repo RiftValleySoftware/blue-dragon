@@ -32,7 +32,7 @@ define('_ERR_COMM_ERR__',               7);     // There was some kind of commun
 define('_ERR_INTERNAL_ERR__',           8);     // There was some kind of internal program error.
 define('_ERR_NOT_LOGGED_IN__',          9);     // A Logout Attempt Was Made Where No Login Was Present.
 define('_ERR_INVALID_PARAMETERS__',     10);    // The parameters provided to a method were incorrect or out of bounds.
-define('_ERR_LOGIN_HAS_USER__',         11);    // This means that an attempt to add a login to another user failed, because the login still has a different user associated..
+define('_ERR_LOGIN_HAS_USER__',         11);    // This means that an attempt to add a login to another user failed, because the login still has a different user associated.
 
 /****************************************************************************************************************************/
 /**
