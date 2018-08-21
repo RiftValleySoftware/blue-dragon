@@ -36,7 +36,9 @@ class RVP_PHP_SDK_Thing extends A_RVP_PHP_SDK_Data_Object {
     /**
     \returns true, if the save was successful.
      */
-    protected function _save_data(  $in_args = ''   ///< OPTIONAL: Default is an empty string. This is any previous arguments. This will be appeneded to the end of the list, so it should begin with an ampersand (&), and be url-encoded.
+    protected function _save_data(  $in_args = '',              ///< OPTIONAL: Default is an empty string. This is any previous arguments. This will be appeneded to the end of the list, so it should begin with an ampersand (&), and be url-encoded.
+                                    $in_payload = NULL,         ///< IGNORED. Just here to suppress PHP warnings.
+                                    $in_new_child_ids = NULL    ///< IGNORED. Just here to suppress PHP warnings.
                                 ) {
         $to_set = [
             'key' => (isset($this->_object_data->key) ? trim($this->_object_data->key) : NULL),

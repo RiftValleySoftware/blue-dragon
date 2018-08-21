@@ -1072,7 +1072,7 @@ class RVP_PHP_SDK {
                                 $in_location = NULL,    ///< OPTIONAL: An associative array ('latitude' => float, 'longitude' => float, 'radius' => float), with the long/lat (in degrees), and the radius of the location search (in Kilometers).
                                 $in_writeable = false   ///< OPTIONAL: If true, then only places the current login can edit are returned. Ignored if not logged in.
                                 ) {
-        $ret = NULL;
+        $ret = [];
         
         $added_parameters = '';
         
@@ -1113,7 +1113,7 @@ class RVP_PHP_SDK {
             }
         } else {
             $this->set_error(_ERR_COMM_ERR__);
-            return NULL;
+            return [];
         }
         
         return $ret;
@@ -1146,7 +1146,7 @@ class RVP_PHP_SDK {
                                 $in_get_logins_only = false,    ///< OPTIONAL: If true (Default is false), then only login objects associated with the user objects that fall within the search will be returned.
                                 $in_writeable = false           ///< OPTIONAL: If true, then only places the current login can edit are returned. Ignored if not logged in.
                                 ) {
-        $ret = NULL;
+        $ret = [];
         
         $added_parameters = '';
         
@@ -1182,7 +1182,7 @@ class RVP_PHP_SDK {
                                 $ret[] = $new_object;
                             } else {
                                 $this->set_error(_ERR_INTERNAL_ERR__);
-                                return NULL;
+                                return [];
                             }
                         } elseif (!$in_get_logins_only) {
                             $new_object = new RVP_PHP_SDK_User($this, $person->id, $person);
@@ -1190,7 +1190,7 @@ class RVP_PHP_SDK {
                                 $ret[] = $new_object;
                             } else {
                                 $this->set_error(_ERR_INTERNAL_ERR__);
-                                return NULL;
+                                return [];
                             }
                         }
                     }
@@ -1213,7 +1213,7 @@ class RVP_PHP_SDK {
             }
         } else {
             $this->set_error(_ERR_COMM_ERR__);
-            return NULL;
+            return [];
         }
         
         return $ret;
@@ -1246,7 +1246,7 @@ class RVP_PHP_SDK {
                                 $in_location = NULL,    ///< OPTIONAL: An associative array ('latitude' => float, 'longitude' => float, 'radius' => float), with the long/lat (in degrees), and the radius of the location search (in Kilometers).
                                 $in_writeable = false   ///< OPTIONAL: If true, then only places the current login can edit are returned. Ignored if not logged in.
                                 ) {
-        $ret = NULL;
+        $ret = [];
         
         $added_parameters = '';
         
@@ -1275,7 +1275,7 @@ class RVP_PHP_SDK {
                         $ret[] = $new_object;
                     } else {
                         $this->set_error(_ERR_INTERNAL_ERR__);
-                        return NULL;
+                        return [];
                     }
                 }
         
@@ -1296,7 +1296,7 @@ class RVP_PHP_SDK {
             }
         } else {
             $this->set_error(_ERR_COMM_ERR__);
-            return NULL;
+            return [];
         }
         
         return $ret;
@@ -1321,7 +1321,7 @@ class RVP_PHP_SDK {
                                 $in_location = NULL,    ///< OPTIONAL: An associative array ('latitude' => float, 'longitude' => float, 'radius' => float), with the long/lat (in degrees), and the radius of the location search (in Kilometers).
                                 $in_writeable = false   ///< OPTIONAL: If true, then only places the current login can edit are returned. Ignored if not logged in.
                                 ) {
-        $ret = NULL;
+        $ret = [];
         
         $added_parameters = '';
         
@@ -1350,7 +1350,7 @@ class RVP_PHP_SDK {
                         $ret[] = $new_object;
                     } else {
                         $this->set_error(_ERR_INTERNAL_ERR__);
-                        return NULL;
+                        return [];
                     }
                 }
         
@@ -1371,7 +1371,7 @@ class RVP_PHP_SDK {
             }
         } else {
             $this->set_error(_ERR_COMM_ERR__);
-            return NULL;
+            return [];
         }
         
         return $ret;

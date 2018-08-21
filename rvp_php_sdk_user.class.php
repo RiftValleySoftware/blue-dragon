@@ -36,7 +36,9 @@ class RVP_PHP_SDK_User extends A_RVP_PHP_SDK_Data_Object {
     /**
     \returns true, if the save was successful.
      */
-    protected function _save_data(  $in_args = ''   ///< OPTIONAL: Default is an empty string. This is any previous arguments. This will be appeneded to the end of the list, so it should begin with an ampersand (&), and be url-encoded.
+    protected function _save_data(  $in_args = '',              ///< OPTIONAL: Default is an empty string. This is any previous arguments. This will be appeneded to the end of the list, so it should begin with an ampersand (&), and be url-encoded.
+                                    $in_payload = NULL,         ///< IGNORED. Just here to suppress PHP warnings.
+                                    $in_new_child_ids = NULL    ///< IGNORED. Just here to suppress PHP warnings.
                                 ) {
         $to_set = [
             'surname' => (isset($this->_object_data->surname) ? $this->_object_data->surname : NULL),
@@ -495,7 +497,7 @@ class RVP_PHP_SDK_User extends A_RVP_PHP_SDK_Data_Object {
         
         $this->_load_data(false, true);
         
-        if (isset($this->_object_data)) {
+        if (isset($this->_object_data) && isset($this->_object_data->associated_login_id)) {
             $ret = intval($this->_object_data->associated_login_id);
         }
         

@@ -1,7 +1,7 @@
 var class_r_v_p___p_h_p___s_d_k___place =
 [
     [ "__construct", "class_r_v_p___p_h_p___s_d_k___place.html#a1fa21df54754fdd917c3110af239bf6e", null ],
-    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___place.html#a16001bcb11516c9c4e50741cfaec11b2", null ],
+    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___place.html#a967ba39ce9adc099187398997105b1fc", null ],
     [ "_save_change_record", "class_r_v_p___p_h_p___s_d_k___place.html#a07f1dae3b7967094b89f34a9a3c91056", null ],
     [ "_load_data", "class_r_v_p___p_h_p___s_d_k___place.html#a1552481e555c159f631c9b5c83579031", null ],
     [ "basic_address", "class_r_v_p___p_h_p___s_d_k___place.html#ab58ccfea562a4824ce2905647191b925", null ],
@@ -13,8 +13,6 @@ var class_r_v_p___p_h_p___s_d_k___place =
     [ "set_tag9", "class_r_v_p___p_h_p___s_d_k___place.html#ac1b59642d1295f61b25711c0fdad3ebb", null ],
     [ "geocode", "class_r_v_p___p_h_p___s_d_k___place.html#aee0affded9945074651a6d4ac8412ca2", null ],
     [ "reverse_geocode", "class_r_v_p___p_h_p___s_d_k___place.html#ac751ce98b30b238439f4a638b226caa8", null ],
-    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___place.html#a967ba39ce9adc099187398997105b1fc", null ],
-    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___place.html#a33446133cb4739ae80ed594200b8402f", null ],
     [ "coords", "class_r_v_p___p_h_p___s_d_k___place.html#a1596efb2d25187eec50fc09b8f443508", null ],
     [ "set_coords", "class_r_v_p___p_h_p___s_d_k___place.html#a959a4499f4922f3d2d8d30785ecb95dc", null ],
     [ "distance", "class_r_v_p___p_h_p___s_d_k___place.html#a8cf5f63ffb7f3ee8e0ae2011e7aa19cb", null ],

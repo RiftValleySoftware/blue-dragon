@@ -1,7 +1,7 @@
 var class_r_v_p___p_h_p___s_d_k___login =
 [
     [ "__construct", "class_r_v_p___p_h_p___s_d_k___login.html#a1fa21df54754fdd917c3110af239bf6e", null ],
-    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___login.html#a16001bcb11516c9c4e50741cfaec11b2", null ],
+    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___login.html#a967ba39ce9adc099187398997105b1fc", null ],
     [ "_save_change_record", "class_r_v_p___p_h_p___s_d_k___login.html#a07f1dae3b7967094b89f34a9a3c91056", null ],
     [ "_load_data", "class_r_v_p___p_h_p___s_d_k___login.html#a1552481e555c159f631c9b5c83579031", null ],
     [ "login_id", "class_r_v_p___p_h_p___s_d_k___login.html#a1dd796a7e1bb1465a615b2bb14bc3818", null ],
@@ -12,7 +12,6 @@ var class_r_v_p___p_h_p___s_d_k___login =
     [ "user_object_id", "class_r_v_p___p_h_p___s_d_k___login.html#a6925349d1e1cddcfb02c59300eb5c4d6", null ],
     [ "security_tokens", "class_r_v_p___p_h_p___s_d_k___login.html#abac13fe83d51759406d4ae92ce9e22d6", null ],
     [ "set_security_tokens", "class_r_v_p___p_h_p___s_d_k___login.html#a238e07553d2864d9844a0f6e73861a8b", null ],
-    [ "_save_data", "class_r_v_p___p_h_p___s_d_k___login.html#a33446133cb4739ae80ed594200b8402f", null ],
     [ "set_sdk_object", "class_r_v_p___p_h_p___s_d_k___login.html#ad59b417e6ce6eb99057b9a1335ff4758", null ],
     [ "changes", "class_r_v_p___p_h_p___s_d_k___login.html#aa8baf5fbdd5735f2e660640c61e85a8d", null ],
     [ "save_data", "class_r_v_p___p_h_p___s_d_k___login.html#afa4dae959726ea704a4cca3a31e9a3bf", null ],
