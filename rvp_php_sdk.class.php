@@ -243,6 +243,19 @@ class RVP_PHP_SDK {
         // More reportage.
         if (isset($display_log) && $display_log) {
             if (isset($file_data)) {
+                $len = floatval(strlen($file_data));
+                
+                if (0 == $len) {
+                    echo('<p><strong>ADDITIONAL DATA LENGTH IS ZERO!</strong></p>');
+                } elseif ( 1024 > $len) {
+                    echo('<p><strong>ADDITIONAL DATA LENGTH:</strong> <big><code>'.$len.' Bytes</code></big></p>');
+                } elseif ( (1024 * 1024) > $len) {
+                    echo('<p><strong>ADDITIONAL DATA LENGTH:</strong> <big><code>'.($len / 1024).' Kilobytes</code></big></p>');
+                } elseif ( (1024 * 1024 * 1024) > $len) {
+                    echo('<p><strong>ADDITIONAL DATA LENGTH:</strong> <big><code>'.($len / (1024 * 1024)).' Megabytes</code></big></p>');
+                } elseif ( (1024 * 1024 * 1024 * 1024) > $len) {
+                    echo('<p><strong>ADDITIONAL DATA LENGTH:</strong> <big><code>'.($len / (1024 * 1024 * 1024)).' Gigabytes</code></big></p>');
+                }
                 echo('<p><strong>ADDITIONAL DATA SHA:</strong> <big><code>'.sha1($file_data).'</code></big></p>');
             }
             
