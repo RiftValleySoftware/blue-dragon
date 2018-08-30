@@ -10,6 +10,7 @@ var class_r_v_p___p_h_p___s_d_k___login =
     [ "is_main_admin", "class_r_v_p___p_h_p___s_d_k___login.html#af317b78c62b4e06be9d4061d6179b3da", null ],
     [ "set_password", "class_r_v_p___p_h_p___s_d_k___login.html#a519dbcfc4ad0a2df1df200785bbe32e7", null ],
     [ "user_object_id", "class_r_v_p___p_h_p___s_d_k___login.html#a6925349d1e1cddcfb02c59300eb5c4d6", null ],
+    [ "user_object", "class_r_v_p___p_h_p___s_d_k___login.html#ac8143dfb02a19ad795d6ad12c84aac4f", null ],
     [ "security_tokens", "class_r_v_p___p_h_p___s_d_k___login.html#abac13fe83d51759406d4ae92ce9e22d6", null ],
     [ "set_security_tokens", "class_r_v_p___p_h_p___s_d_k___login.html#a238e07553d2864d9844a0f6e73861a8b", null ],
     [ "set_sdk_object", "class_r_v_p___p_h_p___s_d_k___login.html#ad59b417e6ce6eb99057b9a1335ff4758", null ],

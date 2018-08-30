@@ -587,7 +587,8 @@ class RVP_PHP_SDK {
      */
     function logout() {
         if ($this->is_logged_in()) {
-            $this->_call_REST_API('GET', 'logout', NULL);
+            $this->_call_REST_API('GET', 'logout'); // We call this directly, because we will not be using a return type.
+
             if (205 == intval($this->_last_response_code)) {
                 $this->_api_key = NULL;
                 $this->_login_time_limit = -1;
@@ -929,21 +930,38 @@ class RVP_PHP_SDK {
     
     /***********************/
     /**
+    This requires an array of integers be passed in. These are IDs of the objects that you want to fetch.
+    
+    You can pass the IDs as a simple integer array in a single parameter.
+    
     \returns new user, place and/or thing objects (or NULL) for the given integer ID[s]. These will be "unresolved" objects, sorted by ID.
      */
     function get_objects() {
-        $args = array_map('intval', func_get_args());
-        $ret = NULL;
-        $plugin_list = [];
-        $handlers = $this->fetch_data('json/baseline/handlers/'.implode(',', $args));
-        if (isset($handlers)) {
-            $handlers = json_decode($handlers);
-            if (isset($handlers) && isset($handlers->baseline)) {
-                $ret = $this->_decode_handlers($handlers->baseline);
+        $func_args = func_get_args();
+        
+        // If they passed an array as the only argument, then we switch to that.
+        if (is_array($func_args) && (1 == count($func_args)) && is_array($func_args[0]) && count($func_args[0])) {
+            $func_args = $func_args[0];
+        }
+        
+        $ret = [];
+
+        $args = array_map('intval', $func_args);
+        $arg_array = array_chunk($args, 10);    // Split into grous of 10, so we don't create too large a GET request.
+        
+        foreach($arg_array as $args) {
+            $handlers = $this->fetch_data('json/baseline/handlers/'.implode(',', $args));
+            if (isset($handlers)) {
+                $handlers = json_decode($handlers);
+                if (isset($handlers) && isset($handlers->baseline)) {
+                    $results = $this->_decode_handlers($handlers->baseline);
+                    
+                    $ret = array_merge($ret, $results);
+                }
+            } else {
+                $this->set_error(_ERR_COMM_ERR__);
+                return NULL;
             }
-        } else {
-            $this->set_error(_ERR_COMM_ERR__);
-            return NULL;
         }
         
         if (isset($ret) && is_array($ret) && (1 < count($ret))) {

@@ -81,13 +81,29 @@ abstract class A_RVP_PHP_SDK_Object {
                                     $in_new_child_ids = NULL    ///< IGNORED. Just here to suppress PHP warnings.
                                 ) {
         $ret = NULL;
+        $put_args = '';
         
-        $name = isset($this->_object_data->name) ? $this->_object_data->name : '';
-        $lang = isset($this->_object_data->lang) ? $this->_object_data->lang : '';
-        $read_token = isset($this->_object_data->read_token) ? intval($this->_object_data->read_token) : 0;
-        $write_token = (isset($this->_object_data->write_token) && (0 < intval($this->_object_data->write_token))) ? intval($this->_object_data->write_token) : $this->_sdk_object->my_info()['login']->id();
+        $name = isset($this->_object_data->name) ? $this->_object_data->name : NULL;
+        $lang = isset($this->_object_data->lang) ? $this->_object_data->lang : NULL;
+        $read_token = isset($this->_object_data->read_token) ? intval($this->_object_data->read_token) : NULL;
+        $write_token = isset($this->_object_data->write_token) ? ((0 < intval($this->_object_data->write_token)) ? intval($this->_object_data->write_token) : $this->_sdk_object->my_info()['login']->id()) : NULL;
         
-        $put_args = '&name='.urlencode($name).'&lang='.urlencode($lang).'&read_token='.$read_token.'&write_token='.$write_token;
+        if (isset($name)) {
+            $put_args .= '&name='.urlencode($name);
+        }
+        
+        if (isset($lang)) {
+            $put_args .= '&lang='.urlencode($lang);
+        }
+        
+        if (isset($read_token)) {
+            $put_args .= '&read_token='.intval($read_token);
+        }
+        
+        if (isset($write_token)) {
+            $put_args .= '&write_token='.intval($write_token);
+        }
+        
         $result = json_decode($this->_sdk_object->put_data('/json/'.$this->_plugin_path.'/'.$this->id(), $put_args.$in_args, $in_payload));
         
         return $result;

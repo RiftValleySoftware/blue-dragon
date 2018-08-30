@@ -15,6 +15,7 @@ var class_a___r_v_p___p_h_p___s_d_k___data___object =
     [ "children_ids", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#ad846dd69dfccabdcd2035321bada0931", null ],
     [ "set_new_children_ids", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#afaf62c7afa0147c71c34b580506484ac", null ],
     [ "parent_ids", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#ab0fe365c53b83906182860c73e4b34ea", null ],
+    [ "get_hierarchy", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#a1bffb8c2db45ed3e7bf25cb99b782908", null ],
     [ "_load_data", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#a1552481e555c159f631c9b5c83579031", null ],
     [ "_save_change_record", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#a07f1dae3b7967094b89f34a9a3c91056", null ],
     [ "set_sdk_object", "class_a___r_v_p___p_h_p___s_d_k___data___object.html#ad59b417e6ce6eb99057b9a1335ff4758", null ],

@@ -227,6 +227,25 @@ class RVP_PHP_SDK_Login extends A_RVP_PHP_SDK_Security_Object {
     /**
     This requires a "detailed" load.
     
+    \returns a new instance of RVP_PHP_SDK_User, if this object has an associated user.
+     */
+    function user_object() {
+        $ret = 0;
+        
+        $this->_load_data(false, true);
+        
+        if (isset($this->_object_data) && isset($this->_object_data->user_object_id)) {
+            $ret = intval($this->_object_data->user_object_id);
+            $ret = new RVP_PHP_SDK_User($this->_sdk_object, $this->_object_data->user_object_id);
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    This requires a "detailed" load.
+    
     \returns an array of integer (security tokens) that comprise the "pool" for this login. It sorts the tokens, which include 1 (login) and the ID of this instance.
      */
     function security_tokens() {

@@ -355,7 +355,6 @@ abstract class A_RVP_PHP_SDK_Data_Object extends A_RVP_PHP_SDK_Object {
                                                     */
                                 ) {
         $ret = false;
-        
         // We circumvent our caller for this one.
         $ret = $this->_save_change_record(self::_save_data('', NULL, $in_child_ids));
         
@@ -385,6 +384,43 @@ abstract class A_RVP_PHP_SDK_Data_Object extends A_RVP_PHP_SDK_Object {
 
             if (isset($parent_data) && is_array($parent_data) && count($parent_data)) {
                 $ret = $parent_data;
+            }
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    This requires a detailed data load.
+    
+    This returns a recursive hierarchy of instances for this object. It returns actual object instances; not IDs, using a simple tuple.
+    
+    \returns an associative array. One element will be 'object', and will refer to this object. If the object has child objects, then there will be a 'children' array of more of these nodes. Leaf nodes will contain only 'object' elements.
+     */
+    function get_hierarchy() {
+        $ret = ['object' => $this];
+        
+        $this->_load_data(false, true);
+        
+        if (isset($this->_object_data) && isset($this->_object_data->children)) {
+            $child_data = (array)$this->_object_data->children;
+            
+            if (count($child_data)) {
+                $ret['children'] = [];
+                foreach ($child_data as $plugin) {
+                    if (count($plugin)) {
+                        $objects = $this->_sdk_object->get_objects($plugin);
+                
+                        if (is_array($objects) && count($objects)) {
+                            foreach ($objects as $object) {
+                                if (method_exists($object, 'get_hierarchy')) {
+                                    $ret['children'][] = $object->get_hierarchy();
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         
