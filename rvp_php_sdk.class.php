@@ -28,7 +28,7 @@ require_once(dirname(__FILE__).'/rvp_php_sdk_place.class.php');
 require_once(dirname(__FILE__).'/rvp_php_sdk_thing.class.php');
 require_once(dirname(__FILE__).'/lang/common.php');
 
-define('__SDK_VERSION__', '1.0.0.0000');
+define('__SDK_VERSION__', '1.0.0.2000');
 
 /****************************************************************************************************************************/
 /**
@@ -134,7 +134,6 @@ class RVP_PHP_SDK {
                                         ) {
     
         $method = strtoupper(trim($method));            // Make sure the method is always uppercase.
-    
         // Initialize function local variables.
         $file = NULL;               // This will be a file handle, for uploads.
         $content_type = NULL;       // This is used to signal the content-type for uploaded files.
@@ -144,6 +143,7 @@ class RVP_PHP_SDK {
         
         // If data is provided by the caller, we read it into a temporary location, and Base64-encode it.
         if ($data_input) {
+
             $file_data = base64_encode($data_input['data']);
         
             $temp_file_name = tempnam(sys_get_temp_dir(), 'RVP');
@@ -202,7 +202,7 @@ class RVP_PHP_SDK {
             curl_setopt($curl, CURLOPT_USERPWD, $this->_server_secret.':'.$this->_api_key);
             
             // This is because some servers may intercept the auth headers, so we also supply the credentials as URL query arguments.
-            if (isset($url_extension) && (false !== strpos($url_extension, '?'))) {  // See iff we need to append, or begin a new query.
+            if (isset($url_extension) && (false !== strpos($url_extension, '?'))) {  // See if we need to append, or begin a new query.
                 $url_extension .= '&';
             } else {
                 $url_extension .= '?';
@@ -947,7 +947,7 @@ class RVP_PHP_SDK {
         $ret = [];
 
         $args = array_map('intval', $func_args);
-        $arg_array = array_chunk($args, 10);    // Split into grous of 10, so we don't create too large a GET request.
+        $arg_array = array_chunk($args, 10);    // Split into groups of 10, so we don't create too large a GET request.
         
         foreach($arg_array as $args) {
             $handlers = $this->fetch_data('json/baseline/handlers/'.implode(',', $args));
@@ -956,7 +956,9 @@ class RVP_PHP_SDK {
                 if (isset($handlers) && isset($handlers->baseline)) {
                     $results = $this->_decode_handlers($handlers->baseline);
                     
-                    $ret = array_merge($ret, $results);
+                    if (isset($results) && is_array($results) && count($results)) {
+                        $ret = array_merge($ret, $results);
+                    }
                 }
             } else {
                 $this->set_error(_ERR_COMM_ERR__);
@@ -1639,6 +1641,417 @@ class RVP_PHP_SDK {
         } else {
             $this->set_error(_ERR_INVALID_PARAMETERS__);
             return NULL;
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    This requires that the current login be a manager.
+    This creates one user people object, and, possibly, an associated login.
+    NOTE: The login ID and password are returned as part of the response, but the password is not included in the new user object. If not retained after this call, the password will be lost.
+    
+    \returns an associative array ('login_id' => string, 'password' => string, 'user' => object, 'login' => object), containing the login ID (if requested), password (if requested), the user object, and the login object (if requested). The user will be completely "sparse," with no additional information, beyond the general name and any associated login ID.
+     */
+    function new_user(  $in_user_name,          ///< REQUIRED: The name of the user object (not one of the tag names)
+                        $in_tokens,             /**< REQUIRED: An associative array, ['read' => integer, 'write' => integer, 'tokens' => [integer]]
+                                                        - 'read' is optional. If not supplied, the user read will be set to '1' (only logged0in user can see)
+                                                        - 'write' is optional if $in_login_id is set (the login ID will be used). If $in_login_id is not supplied, then this is required, and must be an integer greater than 0 (and which the current manager has). If supplied, and not "owned" by the manager, then it will be ignored. If $in_login_id is not set, and the write token is invalid, then the operation will abort. Remember that setting this to 1 means that ALL logins can read and write the user.
+                                                        - 'tokens' is optional, and will only be considered if $in_login_id is set. This will be an array of int, and the manager performing this should have all the tokens. If unqualified tokens are provided, they will not be set, but the operation will not be aborted.
+                                                */
+                        $in_login_id = NULL     ////< OPTIONAL: This is a string, with a requested login ID. If supplied, then a new login will be created, along with the user. The login ID must be a unique string in the security DB, and the operation will fail, if a login ID is supplied, but is already in use. A random password will be generated, and returned in the function return object.
+                    ) {
+        $ret = NULL;
+        $need_a_write_in = false;   // This will be true, if we need to force a write token.
+        $login_id = (isset($in_login_id) && trim($in_login_id)) ? trim($in_login_id) : NULL; // See if we have a login ID.
+            
+        if ($this->is_manager()) {  // Must be a manager.
+            if ($login_id) { // some prerequisites.
+                // We test to see if the login they want is already in use.
+                $uri = 'json/people/logins/'.$login_id.'?test';
+                $response = $this->fetch_data($uri);
+                if (isset($response)) {
+                    $response = json_decode($response);
+                    if (isset($response) && isset($response->people) && isset($response->people->logins) && isset($response->people->logins->login_exists) && $response->people->logins->login_exists) {
+                        $this->set_error(_ERR_INVALID_LOGIN_ID__);
+                        return NULL;
+                    } else {
+                        if (!isset($in_tokens) || !is_array($in_tokens) || !isset($in_tokens['write']) || !intval($in_tokens['write'])) {   // If a valid write token was not supplied, we'll need to add one.
+                            $need_a_write_in = true;
+                        }
+                    }
+                } else {
+                    $this->set_error(_ERR_COMM_ERR__);
+                    return NULL;
+                }
+            } else {    // If we are not creating a login, then we are required to have a valid write token.
+                if (!isset($in_tokens) || !isset($in_tokens['write']) || (1 > intval($in_tokens['write'])) || !in_array(intval($in_tokens['write']), $this->my_tokens())) {
+                    $this->set_error(_ERR_INVALID_PARAMETERS__);
+                    return NULL;
+                }
+            }
+            
+        } else {
+            $this->set_error(_ERR_NOT_AUTHORIZED__);
+            return NULL;
+        }
+        
+        // If we got here, then we're clear, so far.
+        $uri = 'json/people/people';
+        $params = '';
+        if ($login_id) {
+            $params .= '&login_id='.urlencode($login_id);
+        }
+        
+        if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['read'])) {
+            $params .= '&read_token='.intval($in_tokens['read']);
+        }
+        
+        if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['write']) && (0 < intval($in_tokens['write']))) {
+            $params .= '&write_token='.intval($in_tokens['write']);
+        }
+        
+        if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['tokens'])) {
+            $params .= '&tokens='.implode(',', array_map('intval', $in_tokens['tokens']));
+        }
+        
+        $uri .= '/?'.trim($params, "\&");
+         
+        $response = $this->post_data($uri);
+        
+        if (isset($response)) {
+            $response = json_decode($response);
+            
+            if (isset($response) && isset($response->people) && isset($response->people->people) && isset($response->people->people->new_user)) {
+                $ret = [];
+                
+                if (isset($response->people->people->new_user->associated_login)) {
+                    $ret['login_id'] = $response->people->people->new_user->associated_login->login_id;
+                    $ret['password'] = $response->people->people->new_user->associated_login->password;
+                    unset($response->people->people->new_user->associated_login->password);
+                    $id = $response->people->people->new_user->associated_login->id;
+                    $response->people->people->new_user->associated_login_id = $id;
+                    $ret['login'] = new RVP_PHP_SDK_Login($this, $id, $response->people->people->new_user->associated_login, true);
+                    unset($response->people->people->new_user->associated_login);
+                }
+                
+                $ret['user'] = new RVP_PHP_SDK_User($this, $response->people->people->new_user->id, $response->people->people->new_user, true);
+            }
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    This creates a new, blank place object.
+    The user must be logged in (being a manager is not required), and you can optionally assign a longitude/latitude location.
+    BOTH longitude and latitude must be supplied in order to assign any value to either.
+    You can also supply a "fuzz factor" immediately.
+    The response will have a read token of 0 (everyone can read), and a write token of the ID of the creating login.
+    
+    \returns a new place object. The object will be basically uninitialized. NULL, if the create failed.
+     */
+    function new_place( $in_place_name,         ///< REQUIRED: A general name for the place (different from the venue name).
+                        $in_tokens = [],        /**< OPTIONAL: Default is an empty array. An associative array, ['read' => integer, 'write' => integer]
+                                                        - 'read' is optional. If not supplied, the user read will be set to '0' (all can see)
+                                                        - 'write' is optional and must be an integer greater than 0 (and which the current manager has). If supplied, and not "owned" by the manager, then it will be ignored. If the write token is invalid, then the operation will abort. Remember that setting this to 1 means that ALL logins can read and write the record.
+                                                */
+                        $in_latitude = NULL,    ///< OPTIONAL: Default is NULL. If supplied, should be a floating-point value, in degrees latitude, of the place location. Must be supplied with valid $in_longitude value.
+                        $in_longitude = NULL,   ///< OPTIONAL: Default is NULL. If supplied, should be a floating-point value, in degrees longitude, of the place location. Must be supplied with valid $in_latitude value.
+                        $in_fuzz_factor = NULL  ///< OPTIONAL: Default is NULL. If supplied, should contain a floating-point number, with a "fuzz factor" distance, in Kilometers.
+                        ) {
+        $ret = NULL;
+        
+        if ($this->is_logged_in()) {    // Must be logged in.
+            $uri = 'json/places';
+            $params = '';
+            if ($in_place_name) {
+                $params .= '&name='.urlencode($in_place_name);
+            }
+        
+            if ($in_latitude) {
+                $params .= '&latitude='.floatval($in_latitude);
+            }
+        
+            if ($in_longitude) {
+                $params .= '&longitude='.floatval($in_longitude);
+            }
+        
+            if ($in_fuzz_factor) {
+                $params .= '&fuzz_factor='.floatval($in_fuzz_factor);
+            }
+        
+            if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['read'])) {
+                $params .= '&read_token='.intval($in_tokens['read']);
+            }
+        
+            if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['write']) && (0 < intval($in_tokens['write']))) {
+                $params .= '&write_token='.intval($in_tokens['write']);
+            }
+        
+            $params = trim($params, "\&");
+         
+            $response = $this->post_data($uri, $params);
+        
+            if (isset($response)) {
+                $response = json_decode($response);
+            
+                if (isset($response) && isset($response->places) && isset($response->places->new_place)) {
+                    $response = $response->places->new_place;
+                    
+                    $ret = new RVP_PHP_SDK_Place($this, $response->id, $response, true);
+                }
+            }
+        } else {
+            $this->set_error(_ERR_NOT_AUTHORIZED__);
+            return NULL;
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    This creates a new, blank thing object.
+    The user must be logged in (being a manager is not required).
+    
+    \returns a new thing object. The object will be basically uninitialized. NULL, if the create failed.
+     */
+    function new_thing( $in_thing_key,                  ///< REQUIRED: A key for the thing (must be a unique key). If this is not completely unique in the server, the operation will fail.
+                        $in_thing_value,                ///< REQUIRED: This is a binary value to be associated with the thing.
+                        $in_tokens = [],                /**< OPTIONAL: Default is an empty array. An associative array, ['read' => integer, 'write' => integer]
+                                                                - 'read' is optional. If not supplied, the user read will be set to '0' (all can see)
+                                                                - 'write' is optional and must be an integer greater than 0 (and which the current manager has). If supplied, and not "owned" by the manager, then it will be ignored. If the write token is invalid, then the operation will abort. Remember that setting this to 1 means that ALL logins can read and write the record.
+                                                        */
+                        $in_thing_name = NULL,          ///< OPTIONAL: Default is NULL. If supplied, will be a general name for the thing.
+                        $in_thing_description = NULL    ///< OPTIONAL: Default is NULL. If supplied, this should be a string up to 255 characters long, describing the thing.
+                        ) {
+        $ret = NULL;
+        
+        if ($this->is_logged_in() && isset($in_thing_key) && $in_thing_key && isset($in_thing_value) && $in_thing_value) {    // Must be logged in, and we must have the required parameters.
+            $uri = 'json/things';
+            $params = '';
+            
+            $in_thing_key = trim($in_thing_key);
+            
+            if (false !== strpos($in_thing_key, ',')) {    // Cannot have commas in the key.
+                $in_thing_key = NULL;
+            }
+            
+            if ($in_thing_key) {
+                $params .= '&key='.urlencode($in_thing_key);
+            }
+            
+            if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['read'])) {
+                $params .= '&read_token='.intval($in_tokens['read']);
+            }
+            
+            if (isset($in_tokens) && is_array($in_tokens) && count($in_tokens) && isset($in_tokens['write']) && (0 < intval($in_tokens['write']))) {
+                $params .= '&write_token='.intval($in_tokens['write']);
+            }
+
+            if ($in_thing_name) {
+                $params .= '&name='.urlencode($in_thing_name);
+            }
+        
+            if ($in_thing_description) {
+                $params .= '&description='.urlencode($in_thing_description);
+            }
+        
+            $params = trim($params, "\&");
+            
+            $temp_file = tempnam(sys_get_temp_dir(), 'RVP');  
+            file_put_contents($temp_file , $in_thing_value);
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);  
+            $content_type = finfo_file($finfo, $temp_file);
+            unlink($temp_file);
+            $payload = ['data' => $in_thing_value, 'type' => $content_type];
+     
+            $response = $this->post_data($uri, $params, $payload);
+        
+            if (isset($response)) {
+                $response = json_decode($response);
+            
+                if (isset($response) && isset($response->things) && isset($response->things->new_thing)) {
+                    $response = $response->things->new_thing;
+                    
+                    $ret = new RVP_PHP_SDK_Thing($this, $response->id, $response, true);
+                }
+            }
+        } else {
+            // If they are logged in, then they are authorized, but they don't have required parameters.
+            $this->set_error($this->is_logged_in() ? _ERR_INVALID_PARAMETERS__ : _ERR_NOT_AUTHORIZED__);
+            return NULL;
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    Deletes a user and associated login.
+    The caller must be a manager or main admin.
+    
+    \returns true, if the deletion succeeded.
+     */
+    function delete_user(   $in_object  ///< REQUIRED: This can be a user object, a login object, or an integer (user ID). If a user object, and if that object has an associated login, then both objects will be deleted. If a login object, then only the login will be deleted. An integer ID will always be considered to be a user object ID.
+                        ) {
+        $ret = false;
+        
+        if ($this->is_manager() && isset($in_object)) {  // Must be at least a manager.
+            $user_id = 0;
+            $login_id = 0;
+            
+            if ($in_object instanceof RVP_PHP_SDK_User) {
+                if ($in_object->writeable()) {  // Have to be able to edit.
+                    $user_id = $in_object->id();
+                }
+            } elseif ($in_object instanceof RVP_PHP_SDK_Login) {
+                if ($in_object->writeable()) {  // Have to be able to edit.
+                    $login_id = $in_object->id();
+                }
+            } else {
+                $user_id = intval($in_object);
+            }
+            
+            if ($user_id || $login_id) {    // We need to have something to proceed.
+                $uri = 'json/people';
+                $ret = true;
+                
+                if ($user_id) {
+                    $response = $this->delete_data($uri.'/people/'.$user_id);
+        
+                    if (isset($response)) {
+                        $response = json_decode($response);
+            
+                        if (!(isset($response) && isset($response->people->people) && isset($response->people->people->deleted_users) && is_array($response->people->people->deleted_users) && (1 == count($response->people->people->deleted_users)) && ($user_id == $response->people->people->deleted_users[0]->id))) {
+                            $this->set_error(_ERR_COMM_ERR__);
+                            $ret = false;
+                        } elseif (isset($response->people->people->deleted_users[0]->associated_login_id)) {
+                            $login_id = intval($response->people->people->deleted_users[0]->associated_login_id);
+                        } elseif (isset($response->people->people->deleted_users[0]->associated_login)) {
+                            $login_id = intval($response->people->people->deleted_users[0]->associated_login->id);
+                        }
+                    } else {
+                        $this->set_error(_ERR_COMM_ERR__);
+                        $ret = false;
+                    }
+                }
+                
+                if ($ret && $login_id) {
+                    $response = $this->delete_data($uri.'/logins/'.$login_id);
+        
+                    if (isset($response)) {
+                        $response = json_decode($response);
+            
+                        if (!(isset($response) && isset($response->people->logins) && isset($response->people->logins->deleted_logins) && is_array($response->people->logins->deleted_logins) && (1 == count($response->people->logins->deleted_logins)) && ($login_id == $response->people->logins->deleted_logins[0]->id))) {
+                            $this->set_error(_ERR_COMM_ERR__);
+                            $ret = false;
+                        }
+                    } else {
+                        $this->set_error(_ERR_COMM_ERR__);
+                        $ret = false;
+                    }
+                }
+            }
+        } else {
+            // If they are logged in as a manager, then they are authorized, but they don't have required parameters.
+            $this->set_error($this->is_manager() ? _ERR_INVALID_PARAMETERS__ : _ERR_NOT_AUTHORIZED__);
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    Deletes a place object.
+    
+    \returns true, if the deletion succeeded.
+     */
+    function delete_place(  $in_object  ///< REQUIRED: This can be a place object, or an integer (place ID).
+                        ) {
+        $ret = false;
+        
+        if ($this->is_logged_in() && isset($in_object)) {  // Must be logged in.
+            $place_id = 0;
+            
+            if ($in_object instanceof RVP_PHP_SDK_Place) {
+                $place_id = $in_object->id();
+            } else {
+                $place_id = intval($in_object);
+            }
+            
+            if ($place_id) {    // Assuming that we have an ID...
+                if (isset($this->test_visibility($place_id)['writeable'])) { // We must be able to write.
+                    $uri = 'json/places/'.$place_id;
+                    $ret = true;
+                    $response = $this->delete_data($uri);
+        
+                    if (isset($response)) {
+                        $response = json_decode($response);
+            
+                        if (!(isset($response) && isset($response->places) && isset($response->places->deleted_places) && is_array($response->places->deleted_places) && (1 == count($response->places->deleted_places)) && ($place_id == $response->places->deleted_places[0]->id))) {
+                            $this->set_error(_ERR_COMM_ERR__);
+                            $ret = false;
+                        }
+                    }
+                } else {
+                    $this->set_error(_ERR_NOT_AUTHORIZED__);
+                }
+            }
+        } else {
+            // If they are logged in, then they are authorized, but they don't have required parameters.
+            $this->set_error($this->is_logged_in() ? _ERR_INVALID_PARAMETERS__ : _ERR_NOT_AUTHORIZED__);
+        }
+        
+        return $ret;
+    }
+    
+    /***********************/
+    /**
+    Deletes a thing object.
+    
+    \returns true, if the deletion succeeded.
+     */
+    function delete_thing(  $in_object  ///< REQUIRED: This can be a thing object, a string (key), or an integer (thing ID).
+                        ) {
+        $ret = false;
+        
+        if ($this->is_logged_in() && isset($in_object)) {  // Must be logged in.
+            $thing_id = 0;
+            
+            if ($in_object instanceof RVP_PHP_SDK_thing) {
+                $thing_id = $in_object->id();
+            } else {    // This is how we resolve string keys. Just fetch the damn object, and extract its ID.
+                $thing = $this->get_thing_info($in_object);
+                if (isset($thing) && ($thing instanceof RVP_PHP_SDK_thing)) {
+                    $thing_id = intval($thing->id());
+                }
+            }
+            
+            if ($thing_id) {    // Assuming that we have an ID...
+                if (isset($this->test_visibility($thing_id)['writeable'])) { // We must be able to write.
+                    $uri = 'json/things/'.$thing_id;
+                    $ret = true;
+                    $response = $this->delete_data($uri);
+        
+                    if (isset($response)) {
+                        $response = json_decode($response);
+            
+                        if (!(isset($response) && isset($response->things) && isset($response->things->deleted_things) && is_array($response->things->deleted_things) && (1 == count($response->things->deleted_things)))) {
+                            $this->set_error(_ERR_COMM_ERR__);
+                            $ret = false;
+                        }
+                    }
+                } else {
+                    $this->set_error(_ERR_NOT_AUTHORIZED__);
+                }
+            }
+        } else {
+            // If they are logged in, then they are authorized, but they don't have required parameters.
+            $this->set_error($this->is_logged_in() ? _ERR_INVALID_PARAMETERS__ : _ERR_NOT_AUTHORIZED__);
         }
         
         return $ret;

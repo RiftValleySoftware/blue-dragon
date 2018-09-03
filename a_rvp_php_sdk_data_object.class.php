@@ -44,12 +44,12 @@ abstract class A_RVP_PHP_SDK_Data_Object extends A_RVP_PHP_SDK_Object {
                                     $in_new_child_ids = NULL    ///< OPTIONAL: If provided, then this is an array of new child IDs (array of integer).
                                 ) {
         $owner_id = isset($this->_object_data->owner_id) ? intval($this->_object_data->owner_id) : 0;
-        $latitude = isset($this->_object_data->raw_latitude) ? floatval($this->_object_data->raw_latitude) : floatval($this->_object_data->latitude);
-        $longitude = isset($this->_object_data->raw_longitude) ? floatval($this->_object_data->raw_longitude) : floatval($this->_object_data->longitude);
+        $latitude = isset($this->_object_data->raw_latitude) ? floatval($this->_object_data->raw_latitude) : (isset($this->_object_data->latitude) ? floatval($this->_object_data->latitude) : NULL);
+        $longitude = isset($this->_object_data->raw_longitude) ? floatval($this->_object_data->raw_longitude) : (isset($this->_object_data->longitude) ? floatval($this->_object_data->longitude) : NULL);
         $fuzz_factor = isset($this->_object_data->fuzz_factor) ? floatval($this->_object_data->fuzz_factor) : NULL;
         $can_see_through_the_fuzz = isset($this->_object_data->can_see_through_the_fuzz) ? intval($this->_object_data->can_see_through_the_fuzz) : NULL;
         
-        $put_args = '&owner_id='.$owner_id.'&latitude='.$latitude.'&longitude='.$longitude.(isset($fuzz_factor) ? '&fuzz_factor='.$fuzz_factor : '').(isset($can_see_through_the_fuzz) ? '&can_see_through_the_fuzz='.$can_see_through_the_fuzz : '');
+        $put_args = '&owner_id='.$owner_id.(isset($latitude) ? ('&latitude='.$latitude) : '').(isset($longitude) ? ('&longitude='.$longitude) : '').(isset($fuzz_factor) ? '&fuzz_factor='.$fuzz_factor : '').(isset($can_see_through_the_fuzz) ? '&can_see_through_the_fuzz='.$can_see_through_the_fuzz : '');
         
         if (isset($in_new_child_ids) && is_array($in_new_child_ids) && count($in_new_child_ids)) {
             $in_new_child_ids = array_filter(array_map('intval', $in_new_child_ids), function($i) { return 0 != intval($i); });

@@ -490,14 +490,18 @@ class RVP_PHP_SDK_User extends A_RVP_PHP_SDK_Data_Object {
     /**
     This requires a detailed string load.
     
+    NOTE: It is possible for the user data to actually have the entire associated login as part of its data, so, in that case, we extract the login ID directly from that data.
+    
     \returns an integer, with the associated login ID, or NULL.
      */
     function associated_login_id() {
         $ret = NULL;
         
         $this->_load_data(false, true);
-        
-        if (isset($this->_object_data) && isset($this->_object_data->associated_login_id)) {
+
+        if (isset($this->_object_data) && isset($this->_object_data->associated_login->id)) {
+            $ret = intval($this->_object_data->associated_login->id);
+        } elseif (isset($this->_object_data) && isset($this->_object_data->associated_login_id)) {
             $ret = intval($this->_object_data->associated_login_id);
         }
         

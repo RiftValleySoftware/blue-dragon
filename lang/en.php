@@ -53,6 +53,7 @@ class RVP_Locale_en extends A_RVP_Locale {
                    'message_'._ERR_NOT_LOGGED_IN__              =>  'Attempted to Log Out When No Login present',
                    'message_'._ERR_INVALID_PARAMETERS__         =>  'The parameters provided were incorrect or out of bounds',
                    'message_'._ERR_LOGIN_HAS_USER__             =>  'The login association failed, because the login is already associated with a different user',
+                   'message_'._ERR_INVALID_LOGIN_ID__           =>  'The login ID provided was invalid.',
                 ];
     }
 }
